@@ -1,4 +1,4 @@
-# angular-raven
+# angular-raven.js
 Bower repository for the Raven.js / Sentry wrapper for AngularJS
 
 Install using `bower install angular-ravenjs --save`
