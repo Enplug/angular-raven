@@ -2118,54 +2118,40 @@ Raven.setDataCallback(function(data) {
 }(typeof window !== 'undefined' ? window : this));
 
 /**
- * console plugin
+ * native plugin
  *
- * Monkey patches console.* calls into Sentry messages with
- * their appropriate log levels. (Experimental)
+ * Extends support for global error handling for asynchronous browser
+ * functions. Adopted from Closure Library's errorhandler.js.
  */
 ;(function(window) {
 'use strict';
 
-if (window.Raven) Raven.addPlugin(function ConsolePlugin() {
+if (window.Raven) Raven.addPlugin(function nativePlugin() {
 
-var console = window.console || {};
-
-var originalConsole = console,
-    logLevels = ['debug', 'info', 'warn', 'error'],
-    level = logLevels.pop();
-
-var logForGivenLevel = function(level) {
-    var originalConsoleLevel = console[level];
-
-    // warning level is the only level that doesn't map up
-    // correctly with what Sentry expects.
-    if (level === 'warn') level = 'warning';
-    return function () {
+var _helper = function _helper(fnName) {
+    var originalFn = window[fnName];
+    window[fnName] = function ravenAsyncExtension() {
+        // Make a copy of the arguments
         var args = [].slice.call(arguments);
-        Raven.captureMessage('' + args[0], {level: level, logger: 'console', extra: { 'arguments': args }});
-
-        // this fails for some browsers. :(
-        if (originalConsoleLevel) {
-            // IE9 doesn't allow calling apply on console functions directly
-            // See: https://stackoverflow.com/questions/5472938/does-ie9-support-console-log-and-is-it-a-real-function#answer-5473193
-            Function.prototype.bind
-                .call(originalConsoleLevel, originalConsole)
-                .apply(originalConsole, args);
+        var originalCallback = args[0];
+        if (typeof (originalCallback) === 'function') {
+            args[0] = Raven.wrap(originalCallback);
+        }
+        // IE < 9 doesn't support .call/.apply on setInterval/setTimeout, but it
+        // also supports only two arguments and doesn't care what this is, so we
+        // can just call the original function directly.
+        if (originalFn.apply) {
+            return originalFn.apply(this, args);
+        } else {
+            return originalFn(args[0], args[1]);
         }
     };
 };
 
-
-while(level) {
-    console[level] = logForGivenLevel(level);
-    level = logLevels.pop();
-}
-
-// export
-window.console = console;
+_helper('setTimeout');
+_helper('setInterval');
 
 // End of plugin factory
 });
 
-// console would require `window`, so we don't allow it to be optional
-}(window));
+}(typeof window !== 'undefined' ? window : this));
