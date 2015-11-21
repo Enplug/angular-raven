@@ -1,0 +1,29 @@
+{
+  "name": "angular-ravenjs",
+  "version": "1.3.0",
+  "homepage": "http://ravenjs.com/",
+  "authors": [
+    "Alex Ross <alex@enplug.com>"
+  ],
+  "description": "Bower hosted Raven.js / Sentry wrapper for AngularJS",
+  "main": "raven.min.js",
+  "keywords": [
+    "raven", "ravenjs", "error-logging", "angular", "angularjs"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "tmp",
+    "*.iml",
+    "Gruntfile.js",
+    "package.json",
+    "grunt"
+  ],
+  "dependencies": {
+    "angular": "latest"
+  }
+}
